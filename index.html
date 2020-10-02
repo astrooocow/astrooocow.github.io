@@ -2,16 +2,20 @@
 <html>
 	<head>
 		<link rel="stylesheet" type="text/css" href="css/index.css">
-		<canvas 
-			id="myCanvas"
-			width="550"
-			height="500"
-			style="border:2px solid Black;">
-		</canvas>
 	</head>
 
-	<body>
+	<body class="content">
+		<br>
+		<br>
+		<div id="canvas-container">
+			<canvas 
+			id="myCanvas"
+			width="765"
+			height="765">
+			</canvas>
+		</div>
 		<script type="text/javascript" src="js/index.js"></script><br>
-		<button>Generate Maze</button>
+		<button onclick="generateMaze()">Generate Maze</button>
+		<button onclick="generateMaze()">Solve Maze</button>
 	</body>
 </html>
