@@ -1,6 +1,6 @@
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
-ctx.fillStyle = "#d3d3d3";
+ctx.fillStyle = "#d4d4d4";
 
 var width = canvas.width/15;
 var height = canvas.height/15;
@@ -114,7 +114,7 @@ function recursiveDepthFirst(x, y) {
 }
 
 function displayMaze() {
-	ctx.fillStyle = "#d3d3d3";
+	ctx.fillStyle = "#d4d4d4";
 
 	var cellWidth = canvas.width / width;
 	var cellHeight = canvas.height / height;
