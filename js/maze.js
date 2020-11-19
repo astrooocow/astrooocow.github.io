@@ -113,6 +113,10 @@ function recursiveDepthFirst(x, y) {
 	}
 }
 
+/*
+  Draws the maze as a series of cells
+  Left to right, then increment down
+*/
 function displayMaze() {
 	ctx.fillStyle = "#d4d4d4";
 
@@ -122,7 +126,7 @@ function displayMaze() {
 	for (var i = 0; i < height; i++) {
 		for (var j = 0; j < width; j++) {
 			if(maze[i][j] == 0) {
-				ctx.fillRect(i * cellWidth, j * cellHeight, cellWidth, cellHeight);
+				ctx.fillRect(j * cellWidth, i * cellHeight, cellWidth, cellHeight);
 			}
 		}
 	}
@@ -130,4 +134,57 @@ function displayMaze() {
 	ctx.fillStyle = "#ffffff";
 	ctx.fillRect(0, cellHeight, cellWidth, cellHeight);
 	ctx.fillRect(canvas.width - cellWidth, canvas.height - 2*cellHeight, cellWidth, cellHeight);
+}
+
+function playMaze() {
+	var x = 0;
+	var y = 0;
+
+	showPos(x, y);
+
+	let keyPresses = document.getElementById('myCanvas');
+
+	keyPresses.addEventListener("keyup", (event) => {
+    	var key = event.code;
+
+    	switch (key){
+    	case "w":
+    		console.log("w");
+    		if(maze[x][y-1] != 1) {
+    			y--;
+    			showPos(x, y);
+    			console.log("w");
+    		}
+    	case "a":
+    		if(maze[x-1][y] != 1) {
+    			x--;
+    			showPos(x, y);
+    			console.log("a");
+    		}
+    	case "s":
+    		if(maze[x][y+1] != 1) {
+    			y++;
+    			showPos(x, y);
+    			console.log("s");
+    		}
+    	case "d":
+    		if(maze[x+1][y] != 1) {
+    			x++;
+    			showPos(x, y);
+    			console.log("d");
+    		}
+    	default: break;
+    	}
+	});
+}
+
+
+
+function showPos(x, y) {
+	var cellWidth = canvas.width / width;
+	var cellHeight = canvas.height / height;
+
+	ctx.fillStyle = "#42d1d6";
+
+	ctx.fillRect(x * cellWidth + cellWidth, y * cellHeight + cellHeight, cellWidth, cellHeight);
 }
