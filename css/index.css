@@ -11,38 +11,65 @@ html {
 }
 
 #maze {
-	padding: 25px;
-   	width: 100%;
-   	text-align: center;
-   	margin: auto;
+  padding-top: 24px; 
+  width: 100%;
+  text-align: center;
 }
 
 .content {
-	text-align: center;
-	margin: auto;
-	padding: 10px 0px 10px 0px;
+  text-align: center;
 }
 
 .sidebar {
-  	height: 100%;
-  	width: 160px;
-  	position: fixed;
-  	z-index: 1;
-  	top: 0;
-  	left: 0;
-  	background-color: #111;
-  	overflow-x: hidden;
-  	padding-top: 20px;
+  font-family: Comic Sans MS;
+  height: 100%;
+  width: 320px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #007399;
+  overflow-x: hidden;
+  padding-top: 20px;
 }
 
 .sidebar a {
-  	padding: 6px 8px 6px 16px;
-  	text-decoration: none;
-  	font-size: 25px;
-  	color: #818181;
-  	display: block;
+  border: none;
+  text-align: center;
+  display: inline-block;
+  transition-duration: 0.4s;
+  background-color: #007399;
+  color: black;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  text-decoration: none;
+  font-size: 32px;
+  color: #c0c0c0;
+  display: block;
 }
 
 .sidebar a:hover {
-  	color: #f1f1f1;
+  color: black;
+  background-color: #0099cc;
+}
+
+
+.mazeButton {
+  border: none;
+  width: 255px;
+  padding: 16px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  transition-duration: 0.4s;
+  background-color: white;
+  color: black;
+  border: 2px solid #4dd2ff;
+}
+
+.mazeButton:hover {
+  background-color: #4dd2ff;
+  color: white;
 }

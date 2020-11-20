@@ -6,11 +6,11 @@
 		<script type="text/javascript" src="js/index.js"></script>
 	</head>
 
-	<body class="content">
+	<body class="content" id="pageBody">
 		<div class="sidebar">
-			<a href="#maze">Maze</a>
-			<a href="#x">x</a>
-			<a href="#y">y</a>
+			<a class="sideButton" href="#maze">Maze</a>
+			<a class="sideButton" href="#x">x</a>
+			<a class="sideButton" href="#y">y</a>
 		</div>
 
 		<div id="maze">
@@ -21,12 +21,13 @@
 			</canvas>
 		</div>
 
-		<script type="text/javascript" src="js/maze.js"></script><br>
-		<button onclick="generateMaze()" id="fastGen">Fast Generate</button>
-		<button onclick="generateMaze()" id="slowGen">Slow Generate</button>
-		<button onclick="playMaze()" id="playButton">Play</button>
-		<button onclick="solveMaze()" id="solveButton">Solve</button>
+		<div class="mazeButtonsDiv">
 
-		
+			<script type="text/javascript" src="js/maze.js"></script>
+			<button class="mazeButton" onclick="generateMaze()">Generate</button>
+			<button class="mazeButton" onclick="generateMaze()">Slow Generate</button>
+			<button class="mazeButton" onclick="solveMaze()">Solve</button>
+
+		</div>
 	</body>
 </html>

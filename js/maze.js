@@ -2,44 +2,52 @@ var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 ctx.fillStyle = "#d4d4d4";
 
-var width = canvas.width/15;
-var height = canvas.height/15;
+var mazeProperties = {
+	'width'  : canvas.width/15,
+	'height' : canvas.height/15
+};
+
+// player properties
+var player = {
+	'row' : 1,
+	'col' : 1
+};
 
 // init maze
-var maze = new Array(height);
+var maze = new Array(mazeProperties.height);
 
 // make maze 2D
-for (var i = 0; i < maze.length; i++) {
-	maze[i] = new Array(width);
+for (var i = 0; i < mazeProperties.height; i++) {
+	maze[i] = new Array(mazeProperties.width);
 }
 
 function generateMaze() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-	// initialize maze values to 0
-	for (var i = 0; i < maze.length; i++) {
-		for (var j = 0; j < maze[0].length; j++) {
+	// initialize maze values to un-visted;0
+	for (var i = 0; i < mazeProperties.height; i++) {
+		for (var j = 0; j < mazeProperties.width; j++) {
 			maze[i][j] = 0;
 		}
 	}
 
 	// select starting x position
-	var x = getRandomInt(width);
-	while (x % 2 == 0) {
-		x = getRandomInt(width);
+	var startCol = getRandomInt(mazeProperties.width);
+	while (startCol % 2 == 0) {
+		startCol = getRandomInt(mazeProperties.width);
 	}
 
 	// select starting y position
-	var y = getRandomInt(height);
-	while (y % 2 == 0) {
-		y = getRandomInt(height);
+	var startRow = getRandomInt(mazeProperties.height);
+	while (startRow % 2 == 0) {
+		startRow = getRandomInt(mazeProperties.height);
 	}
 
 	// initialize starting xy position
-	maze[x][y] = 1;
+	maze[startCol][startRow] = 1;
 
 	// generate maze
-	recursiveDepthFirst(x, y);
+	recursiveDepthFirst(startCol, startRow);
 
 	displayMaze();
 }
@@ -81,7 +89,7 @@ function recursiveDepthFirst(x, y) {
 			break;
 			
 		case 1: // right
-			if (x + 2 >= width - 1)
+			if (x + 2 >= mazeProperties.width - 1)
 				continue;
 			if (maze[x + 2][y] != 1) {
 				maze[x + 2][y] = 1;
@@ -91,7 +99,7 @@ function recursiveDepthFirst(x, y) {
 			break;
 			
 		case 2: // down
-			if (y + 2 >= height - 1)
+			if (y + 2 >= mazeProperties.height - 1)
 				continue;
 			if (maze[x][y + 2] != 1) {
 				maze[x][y + 2] = 1;
@@ -118,73 +126,95 @@ function recursiveDepthFirst(x, y) {
   Left to right, then increment down
 */
 function displayMaze() {
+	// Create the maze entrance and exit
+	maze[1][0] = 1;
+	maze[mazeProperties.height - 2][mazeProperties.width - 1] = 1;
+
+	// log for debug
+	console.log(maze);
+
+	// color the walls light grey
 	ctx.fillStyle = "#d4d4d4";
 
-	var cellWidth = canvas.width / width;
-	var cellHeight = canvas.height / height;
+	var cellWidth = canvas.width / mazeProperties.width;
+	var cellHeight = canvas.height / mazeProperties.height;
 
-	for (var i = 0; i < height; i++) {
-		for (var j = 0; j < width; j++) {
+	for (var i = 0; i < mazeProperties.height; i++) {
+		for (var j = 0; j < mazeProperties.width; j++) {
 			if(maze[i][j] == 0) {
 				ctx.fillRect(j * cellWidth, i * cellHeight, cellWidth, cellHeight);
 			}
 		}
 	}
-
-	ctx.fillStyle = "#ffffff";
-	ctx.fillRect(0, cellHeight, cellWidth, cellHeight);
-	ctx.fillRect(canvas.width - cellWidth, canvas.height - 2*cellHeight, cellWidth, cellHeight);
+	playMaze();
 }
 
 function playMaze() {
-	var x = 0;
-	var y = 0;
+	player.col = 1;
+	player.row = 1;
+	showPos();
 
-	showPos(x, y);
-
-	let keyPresses = document.getElementById('myCanvas');
-
-	keyPresses.addEventListener("keyup", (event) => {
-    	var key = event.code;
-
-    	switch (key){
-    	case "w":
-    		console.log("w");
-    		if(maze[x][y-1] != 1) {
-    			y--;
-    			showPos(x, y);
-    			console.log("w");
-    		}
-    	case "a":
-    		if(maze[x-1][y] != 1) {
-    			x--;
-    			showPos(x, y);
-    			console.log("a");
-    		}
-    	case "s":
-    		if(maze[x][y+1] != 1) {
-    			y++;
-    			showPos(x, y);
-    			console.log("s");
-    		}
-    	case "d":
-    		if(maze[x+1][y] != 1) {
-    			x++;
-    			showPos(x, y);
-    			console.log("d");
-    		}
-    	default: break;
-    	}
-	});
+	document.onkeypress = handleKeyPress;
 }
 
+function handleKeyPress(e) {
+	switch (e.key) {
+		case "w":
+			movePlayer("up");
+			break;
+    	case "a":
+    		movePlayer("left");
+			break;
+    	case "s":
+    		movePlayer("down");
+			break;
+    	case "d":
+    		movePlayer("right");
+			break;
+    	default: break;
+    }
+}
 
+function movePlayer(dir) {
+	if (dir == "up") {
+		if (player.row != 1) {
+			if (maze[player.row - 1][player.col] != 0) {
+				player.row -= 1;
+			}
+		}
+		showPos();
+	}
+	if (dir == "left") {
+		if (player.col != 1) {
+			if (maze[player.row][player.col - 1] != 0) {
+				player.col -= 1;
+			}
+		}
+		showPos();
+	}
+	if (dir == "down") {
+		if (player.row != mazeProperties.height - 2) {
+			if (maze[player.row + 1][player.col] != 0) {
+				player.row += 1;
+			}
+		}
+		showPos();
+	}
+	if (dir == "right") {
+		if (player.col != mazeProperties.width - 2) {
+			if (maze[player.row][player.col + 1] != 0) {
+				player.col += 1;
+			}
+		}
+		showPos();
+	}
+}
 
-function showPos(x, y) {
-	var cellWidth = canvas.width / width;
-	var cellHeight = canvas.height / height;
+function showPos() {
+	var cellWidth = canvas.width / mazeProperties.width;
+	var cellHeight = canvas.height / mazeProperties.height;
 
 	ctx.fillStyle = "#42d1d6";
 
-	ctx.fillRect(x * cellWidth + cellWidth, y * cellHeight + cellHeight, cellWidth, cellHeight);
+	ctx.fillRect(player.col * cellWidth, player.row * cellHeight, cellWidth, cellHeight);
 }
