@@ -337,15 +337,6 @@ function displaySolved(path) {
 
 	// DEBUG
 	// console.log(coords);
-
-	var cellWidth = canvas.width / maze.prop.size;
-	var cellHeight = canvas.height / maze.prop.size;
-
-	ctx.fillStyle = "#42d1d6";
-
-	for (var i = 0; i < coords.length - 1; i++) {
-		ctx.fillRect(coords[i][1] * cellWidth, coords[i][0] * cellHeight, cellWidth, cellHeight);
-	}
 }
 
 function searchTree(element, ID){
