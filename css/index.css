@@ -69,7 +69,15 @@ html {
   border: 2px solid #4dd2ff;
 }
 
-.mazeButton:hover {
+.mazeButton:disabled {
+  color: lightgrey;
+}
+
+.mazeButton:hover:enabled {
   background-color: #4dd2ff;
   color: white;
+}
+
+.mazeButton:hover:disabled {
+  background-color: #b3ecff;
 }

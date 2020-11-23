@@ -23,11 +23,30 @@
 
 		<div class="mazeButtonsDiv">
 
-			<script type="text/javascript" src="js/maze.js"></script>
-			<button class="mazeButton" onclick="generateMaze()">Generate</button>
-			<button class="mazeButton" onclick="generateMaze()">Slow Generate</button>
-			<button class="mazeButton" onclick="solveMazeDijkstra()">Solve</button>
+			<script 
+				type="text/javascript"
+				src="js/maze.js">
+			</script>
 
+			<button 
+				class="mazeButton"
+				id="mazeGenButton"
+				onclick="
+					document.getElementById('solveMazeButton').disabled=false;
+					generateMaze()"
+			>
+				Generate
+			</button>
+
+			<button
+				class="mazeButton"
+				id="solveMazeButton"
+				onclick="
+					this.disabled=true;
+					solveMazeDijkstra()"
+			>
+				Solve
+			</button>
 		</div>
 	</body>
 </html>

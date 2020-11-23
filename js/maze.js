@@ -17,11 +17,10 @@ var solver = {
 class Maze {
 	constructor() {
 		this.prop = {
-			'size' : canvas.width/85,
+			'size' : canvas.width/15,
 			'cells' : null,
 			'start' : null,
-			'end'   : null,
-			'path'  : []
+			'end'   : null
 		};
 		this.prop.cells = this._mazeInit();
 		this.tree = [];
@@ -78,7 +77,7 @@ function generateMaze() {
 	// console.log(startCol + ", " + startRow);
 
 	// generate maze
-	maze._pushData({id: 0, parentId: null});
+	maze._pushData({id: 0, parentId: null, xPos: startCol, yPos: startRow});
 	recursiveDepthFirst(startRow, startCol, maze.tree[0], 0);
 
 	displayMaze();
@@ -121,7 +120,9 @@ function recursiveDepthFirst(x, y, parentData, depth) {
 				maze.prop.cells[x][y - 1] = 1;
 
 				maze._pushData(
-					{id: maze.tree.length, parentId: parentData.id}
+					{id: maze.tree.length,
+					 parentId: parentData.id,
+					 xPos: y - 2, yPos: x}
 				);
 
 				if (x == 1 && y - 2 == 1) {
@@ -139,7 +140,9 @@ function recursiveDepthFirst(x, y, parentData, depth) {
 				maze.prop.cells[x + 1][y] = 1;
 
 				maze._pushData(
-					{id: maze.tree.length, parentId: parentData.id}
+					{id: maze.tree.length,
+					 parentId: parentData.id,
+					 xPos: y, yPos: x + 2}
 				);
 
 				if (x + 2 == maze.prop.size - 2 && y == maze.prop.size - 2) {
@@ -157,7 +160,9 @@ function recursiveDepthFirst(x, y, parentData, depth) {
 				maze.prop.cells[x][y + 1] = 1;
 
 				maze._pushData(
-					{id: maze.tree.length, parentId: parentData.id}
+					{id: maze.tree.length,
+					 parentId: parentData.id,
+					 xPos: y + 2, yPos: x}
 				);
 
 				if (x == maze.prop.size - 2 && y + 2 == maze.prop.size - 2) {
@@ -175,7 +180,9 @@ function recursiveDepthFirst(x, y, parentData, depth) {
 				maze.prop.cells[x - 1][y] = 1;
 
 				maze._pushData(
-					{id: maze.tree.length, parentId: parentData.id}
+					{id: maze.tree.length,
+					 parentId: parentData.id,
+					 xPos: y, yPos: x - 2}
 				);
 
 				if (x - 2 == 1 && y == 1) {
@@ -281,10 +288,14 @@ function solveMazeDijkstra() {
 	// console.log(maze.prop.start + ", " + maze.prop.end);
 	// console.log(maze.tree);
 
-	const idMapping = maze.tree.reduce((acc, el, i) => {
-		acc[el.id] = i;
+	const idMapping = maze.tree.reduce((acc, element, i) => {
+		acc[element.id] = i;
 		return acc;
 	}, {});
+
+	// DEBUG
+	// console.log(maze.tree);
+	// console.log(idMapping);
 
 	let root;
 	maze.tree.forEach(element => {
@@ -299,29 +310,9 @@ function solveMazeDijkstra() {
 	// DEBUG
 	// console.log(root);
 
-	var deepNodeID = Math.max(maze.prop.start, maze.prop.end);
-	var deepNode = searchTree(root, deepNodeID);
-
-	var exitNodeID = Math.min(maze.prop.start, maze.prop.end);
-	var exitNode = searchTree(root, exitNodeID);
-	var nextNode = searchTree(root, deepNode.parentId);
-
-	var path = [deepNode];
-	while (nextNode != exitNode) {
-		path.push(nextNode);
-
-		if (nextNode.children.length > 1) {
-			if (searchTree(nextNode, exitNodeID) != null) {
-
-				for (var i = nextNode.id; i < exitNodeID; i++) {
-					path.push(searchTree(nextNode, i + 1));
-				}
-				nextNode = exitNode;
-				break;
-			}
-		}
-		nextNode = searchTree(root, nextNode.parentId);
-	}
+	var startNode = searchTree(root, maze.prop.start);
+	var endNode = searchTree(root, maze.prop.end);
+	var path = getPath(root, startNode, endNode);
 
 	// DEBUG
 	// console.log(path);
@@ -329,14 +320,77 @@ function solveMazeDijkstra() {
 	displaySolved(path);
 }
 
-function displaySolved(path) {
-	var coords = [];
-	for (var i = 0; i < path.length; i++) {
-		coords.push(maze.prop.path[path[i].id]);
+function getPath(root, n1, n2) {
+
+	// get each endpoints path from the root
+	var pathNode1 = getPathFromRoot(root, n1);
+	var pathNode2 = getPathFromRoot(root, n2);
+
+	// initialize intersection to not found
+	var intersection = -1;
+	
+	// find the intersection
+	var i = 0; j = 0;
+	while (i != pathNode1.length || j != pathNode2.length) {
+		if (i == j && pathNode1[i] == pathNode2[i]) {
+			i++;
+			j++;
+		} else {
+			intersection = j - 1;
+			break;
+		}
 	}
 
-	// DEBUG
-	// console.log(coords);
+	var path = [];
+	for (i = pathNode1.length - 1; i > intersection; i--) {
+		path.push(pathNode1[i]);
+	}
+	for (i = intersection; i < pathNode2.length; i++) {
+		path.push(pathNode2[i]);
+	}
+	return path;
+}
+
+function getPathFromRoot(root, node) {
+	var path = [];
+
+	var cur = root;
+	while (cur.id != node.id) {
+		path.push(cur);
+
+		// first branch has the node we are looking for
+		if (searchTree(cur.children[0], node.id) != null) {
+			cur = cur.children[0];
+		}
+
+		// second branch has the node we are looking for
+		else if (searchTree(cur.children[1], node.id) != null) {
+			cur = cur.children[1];
+		}
+
+		// third branch has the node we are looking for
+		else if (searchTree(cur.children[2], node.id) != null) {
+			cur = cur.children[2];
+		}
+	}
+	return path;
+}
+
+function displaySolved(path) {
+	var cellsize = canvas.width / maze.prop.size;
+	for (var i = 0; i < path.length - 1; i++) {
+		drawLine(path[i], path[i + 1], cellsize);
+	}
+}
+
+function drawLine(p1, p2, mag) {
+	ctx.beginPath();
+	ctx.moveTo(p1.xPos * mag + mag/2, p1.yPos * mag + mag/2);
+	ctx.lineTo(p2.xPos * mag + mag/2, p2.yPos * mag + mag/2);
+	ctx.strokeStyle = "#42d1d6";
+	ctx.lineWidth = 2;
+	ctx.stroke();
+	ctx.closePath();
 }
 
 function searchTree(element, ID){
