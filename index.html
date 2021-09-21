@@ -3,31 +3,29 @@
 	<head>
 		<meta charset="utf-8"/>
 		<link rel="stylesheet" type="text/css" href="css/index.css">
+		<link rel="stylesheet" type="text/css" href="css/prism.css" />
 		<script type="text/javascript" src="js/index.js"></script>
+		<script type="text/javascript" src="js/prism.js"></script>
 	</head>
 
-	<body class="content" id="pageBody">
-		<div class="sidebar">
-			<a class="sideButton" href="#maze">Maze</a>
-			<a class="sideButton" href="#x">x</a>
-			<a class="sideButton" href="#y">y</a>
-		</div>
 
-		<div id="maze">
+
+	<body class="content">
+		<div id="maze" class="project">
+			<header>Maze Generator</header>
+			<br>
 			<canvas 
-			id="myCanvas"
-			width="765"
-			height="765">
+				id="mazeCanvas"
+				width="765"
+				height="765">
 			</canvas>
-		</div>
-
-		<div class="mazeButtonsDiv">
 
 			<script 
 				type="text/javascript"
 				src="js/maze.js">
 			</script>
-
+			<br>
+			<br>
 			<button 
 				class="mazeButton"
 				id="mazeGenButton"
@@ -48,5 +46,153 @@
 				Solve
 			</button>
 		</div>
+		<br>
+
+		<div id="quad" class="project">
+			<header>Quad Tree Visualizer</header>
+			<br>
+			<div class="parent flex-parent">
+				<div class="left">
+					<canvas 
+						id="quadCanvas"
+						width="765"
+						height="765">
+					</canvas>
+				</div>
+
+				<div class="right">
+					<pre><code class=" language-js">/* Sorts given points in space into manageable rectangles
+*  in this instance, only leaf nodes can contain point(s)
+*  
+*  @param capacity: max number of points per leaf
+*  @param bounds  : bounding rectangle
+*  @param points[]: point values
+*  @param divided : boolean determining if this quadTree
+*                   has divided yet.
+*/
+class QuadTree {
+
+	constructor(bounds) {
+		this.capacity = 1;
+		this.bounds = bounds;
+		this.points = [];
+		this.divided = false;
+
+		// subtrees
+		this.northWest = undefined;
+		this.northEast = undefined;
+		this.southEast = undefined;
+		this.southWest = undefined;
+	}
+
+
+	insert(point) {
+		// dont insert if out of bounds
+		if (!this.bounds.contains(point)) {
+			return false;
+		}
+
+		if (this._query(point)) {
+			return false;
+		}
+
+		// insert if there is space, and has no children
+		if (this.points.length < this.capacity && !this.divided) {
+			this.points.push(point);
+			return true;
+
+		// otherwise divide this quadTree
+		} else if (!this.divided) {
+			this._subdivide();
+
+			// insert old point(s) into children
+			for (let i = 0; i < this.points.length; i++) {
+				if (this.northWest.insert(this.points[i])) 
+					{ this.points = []; continue; }
+				if (this.northEast.insert(this.points[i]))
+					{ this.points = []; continue; }
+				if (this.southEast.insert(this.points[i]))
+					{ this.points = []; continue; }
+				if (this.southWest.insert(this.points[i]))
+					{ this.points = []; continue; }
+			}
+		}
+
+		// insert new point into children
+		if (this.northWest.insert(point)) return true;
+		if (this.northEast.insert(point)) return true;
+		if (this.southEast.insert(point)) return true;
+		if (this.southWest.insert(point)) return true;
+	}
+
+
+	// subdivides this quadTree and draws bounding rect
+	// to canvas
+	_subdivide() {
+		let NWbounds = new Rectangle(
+			this.bounds.x,
+			this.bounds.y,
+			this.bounds.width  / 2,
+			this.bounds.height / 2 );
+		let NEbounds = new Rectangle(
+			this.bounds.centerx,
+			this.bounds.y,
+			this.bounds.width  / 2,
+			this.bounds.height / 2 );
+		let SEbounds = new Rectangle(
+			this.bounds.centerx,
+			this.bounds.centery,
+			this.bounds.width  / 2,
+			this.bounds.height / 2 );
+		let SWbounds = new Rectangle(
+			this.bounds.x,
+			this.bounds.centery,
+			this.bounds.width  / 2,
+			this.bounds.height / 2 );
+
+		this.northWest = new QuadTree(NWbounds);
+		this.northEast = new QuadTree(NEbounds);
+		this.southEast = new QuadTree(SEbounds);
+		this.southWest = new QuadTree(SWbounds);
+
+		drawRect(NWbounds);
+		drawRect(NEbounds);
+		drawRect(SEbounds);
+		drawRect(SWbounds);
+
+		this.divided = true;
+	}
+
+	_query(point) {
+		if (this.divided) {
+			if (this.northEast._query(point)) return true;
+			if (this.northWest._query(point)) return true;
+			if (this.southEast._query(point)) return true;
+			if (this.southWest._query(point)) return true;
+			return false;
+
+		} else {
+			for (let i = 0; i < this.points.length; i++) {
+				if (this.points[i].x == point.x &&
+						this.points[i].y == point.y)
+					return true;
+			}
+			return false;
+		}
+	}
+}</code></pre>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+
+			<script 
+				type="text/javascript"
+				src="js/QuadTree.js">
+			</script>
+		<div class="sidebar">
+			<a class="sideButton" href="#maze">Maze</a>
+			<a class="sideButton" href="#quad">Quad Tree Visualizer</a>
+		</div>
+
 	</body>
 </html>

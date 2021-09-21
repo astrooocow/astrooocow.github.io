@@ -1,80 +1,102 @@
-var canvas = document.getElementById("myCanvas");
-var ctx = canvas.getContext("2d");
-ctx.fillStyle = "#d4d4d4";
+let mazeCanvas = document.getElementById("mazeCanvas");
+let mazeCtx = mazeCanvas.getContext("2d");
+mazeCtx.fillStyle = "#d4d4d4";
 
-// player properties
-var player = {
+/*
+  Dynamic variable that stores the "xy" position of
+  the player within the maze. when a new maze is 
+  generated the player variable is reset to
+  row : 1, col : 1
+ */
+let player = {
 	'row' : 1,
 	'col' : 1
 };
 
-var solver = {
-	'row' : 1,
-	'col' : 1
-};
 
-// maze class
 class Maze {
 	constructor() {
-		this.prop = {
-			'size' : canvas.width/15,
-			'cells' : null,
-			'start' : null,
-			'end'   : null
+		// default properties of the maze
+		// size  : sidelength in px of each cell
+		// cells : array containing visited value of each cell
+		// start : id of the starting node
+		// end   : id of the ending node
+		this.properties = {
+			'size' : mazeCanvas.width/15,
+			'cells' : undefined,
+			'start' : undefined,
+			'end'   : undefined
 		};
-		this.prop.cells = this._mazeInit();
+
+		// fill cells property with initial values
+		this.properties.cells = this.mazeInit();
+
+		// init variable storing tree data
+		// stores id, parent id, xposition, yposition
+		// data is processed and stored as a proper tree later.
 		this.tree = [];
 	}
 
+	// helper function to
+	// push data to tree
 	_pushData (data) {
 		this.tree.push(data);
 	}
 
-	_mazeInit () {
-		var m = new Array(this.prop.size);
-		for (var i = 0; i < this.prop.size; i++) {
-			m[i] = new Array(this.prop.size);
+	// this function fills a 2D array with empty
+	// values. The array is the maze sizes height
+	// and length.
+	mazeInit () {
+		let m = new Array(this.properties.size);
+		for (let i = 0; i < this.properties.size; i++) {
+			m[i] = new Array(this.properties.size);
 		}
 		return m;
 	}
 }
 
-var maze = new Maze();
 
+
+/*
+	This function picks the a start positon
+	randomly. Then a tree is filled using
+	a random recursive depth first search
+	from the randomly selected point.
+
+	Precondition  : none
+	Postcondition : 
+*/
 function generateMaze() {
 	maze.tree = [];
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	mazeCtx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
 
-	// initialize maze values to un-visted;0
-	for (var i = 0; i < maze.prop.size; i++) {
-		for (var j = 0; j < maze.prop.size; j++) {
-			maze.prop.cells[i][j] = 0;
+	// initialize all maze cells to unvisited
+	for (let i = 0; i < maze.properties.size; i++) {
+		for (let j = 0; j < maze.properties.size; j++) {
+			maze.properties.cells[i][j] = 0;
 		}
 	}
 
 	// select starting x position
-	var startCol = getRandomInt(maze.prop.size);
+	let startCol = getRandomInt(maze.properties.size);
 	while (startCol % 2 == 0) {
-		startCol = getRandomInt(maze.prop.size);
+		startCol = getRandomInt(maze.properties.size);
 	}
 
 	// select starting y position
-	var startRow = getRandomInt(maze.prop.size);
+	let startRow = getRandomInt(maze.properties.size);
 	while (startRow % 2 == 0) {
-		startRow = getRandomInt(maze.prop.size);
+		startRow = getRandomInt(maze.properties.size);
 	}
 
 	// initialize starting xy position
-	maze.prop.cells[startRow][startCol] = 1;
+	maze.properties.cells[startRow][startCol] = 1;
 	if (startRow == 1 && startCol == 1) {
-		maze.prop.start = 0;
+		maze.properties.start = 0;
 	}
-	if (startRow == maze.prop.size - 2 && startCol == maze.prop.size - 2) {
-		maze.prop.end = 0;
+	if (startRow == maze.properties.size - 2 && startCol == maze.properties.size - 2) {
+		maze.properties.end = 0;
 	}
-
-	// DEBUG
-	// console.log(startCol + ", " + startRow);
 
 	// generate maze
 	maze._pushData({id: 0, parentId: null, xPos: startCol, yPos: startRow});
@@ -90,7 +112,7 @@ function getRandomInt(max) {
 
 // shuffle an array
 function shuffle(arr) {
-    var ctr = arr.length, temp, index;
+    let ctr = arr.length, temp, index;
 
     while (ctr > 0) {
         index = Math.floor(Math.random() * ctr);
@@ -106,18 +128,18 @@ function shuffle(arr) {
 function recursiveDepthFirst(x, y, parentData, depth) {
 
 	// randomly selects the paths to take
-	var dirs = [0, 1, 2, 3];
+	let dirs = [0, 1, 2, 3];
 	shuffle(dirs);
 
 	// for each path in dirs[] attempt to take it.
-	for (var i = 0; i < dirs.length; i++) {
+	for (let i = 0; i < dirs.length; i++) {
 		switch (dirs[i]) {
 
 		// attempt upwards path
 		case 0: if (y - 2 <= 0) { continue; }
-			if (maze.prop.cells[x][y - 2] != 1) {
-				maze.prop.cells[x][y - 2] = 1;
-				maze.prop.cells[x][y - 1] = 1;
+			if (maze.properties.cells[x][y - 2] != 1) {
+				maze.properties.cells[x][y - 2] = 1;
+				maze.properties.cells[x][y - 1] = 1;
 
 				maze._pushData(
 					{id: maze.tree.length,
@@ -126,7 +148,7 @@ function recursiveDepthFirst(x, y, parentData, depth) {
 				);
 
 				if (x == 1 && y - 2 == 1) {
-					maze.prop.start = maze.tree.length - 1;
+					maze.properties.start = maze.tree.length - 1;
 				}
 
 				recursiveDepthFirst(x, y - 2, maze.tree[maze.tree.length - 1], depth+1);
@@ -134,10 +156,10 @@ function recursiveDepthFirst(x, y, parentData, depth) {
 			break;
 		
 		// attempt rightwards path
-		case 1: if (x + 2 >= maze.prop.size - 1) { continue; }
-			if (maze.prop.cells[x + 2][y] != 1) {
-				maze.prop.cells[x + 2][y] = 1;
-				maze.prop.cells[x + 1][y] = 1;
+		case 1: if (x + 2 >= maze.properties.size - 1) { continue; }
+			if (maze.properties.cells[x + 2][y] != 1) {
+				maze.properties.cells[x + 2][y] = 1;
+				maze.properties.cells[x + 1][y] = 1;
 
 				maze._pushData(
 					{id: maze.tree.length,
@@ -145,8 +167,8 @@ function recursiveDepthFirst(x, y, parentData, depth) {
 					 xPos: y, yPos: x + 2}
 				);
 
-				if (x + 2 == maze.prop.size - 2 && y == maze.prop.size - 2) {
-					maze.prop.end = maze.tree.length - 1;
+				if (x + 2 == maze.properties.size - 2 && y == maze.properties.size - 2) {
+					maze.properties.end = maze.tree.length - 1;
 				}
 
 				recursiveDepthFirst(x + 2, y, maze.tree[maze.tree.length - 1], depth+1);
@@ -154,10 +176,10 @@ function recursiveDepthFirst(x, y, parentData, depth) {
 			break;
 
 		// attempt downwards path
-		case 2: if (y + 2 >= maze.prop.size - 1) { continue; }
-			if (maze.prop.cells[x][y + 2] != 1) {
-				maze.prop.cells[x][y + 2] = 1;
-				maze.prop.cells[x][y + 1] = 1;
+		case 2: if (y + 2 >= maze.properties.size - 1) { continue; }
+			if (maze.properties.cells[x][y + 2] != 1) {
+				maze.properties.cells[x][y + 2] = 1;
+				maze.properties.cells[x][y + 1] = 1;
 
 				maze._pushData(
 					{id: maze.tree.length,
@@ -165,8 +187,8 @@ function recursiveDepthFirst(x, y, parentData, depth) {
 					 xPos: y + 2, yPos: x}
 				);
 
-				if (x == maze.prop.size - 2 && y + 2 == maze.prop.size - 2) {
-					maze.prop.end = maze.tree.length - 1;
+				if (x == maze.properties.size - 2 && y + 2 == maze.properties.size - 2) {
+					maze.properties.end = maze.tree.length - 1;
 				}
 
 				recursiveDepthFirst(x, y + 2, maze.tree[maze.tree.length - 1], depth+1);
@@ -175,9 +197,9 @@ function recursiveDepthFirst(x, y, parentData, depth) {
 
 		// attempt leftwards path
 		case 3: if (x - 2 <= 0) { continue; }
-			if (maze.prop.cells[x - 2][y] != 1) {
-				maze.prop.cells[x - 2][y] = 1;
-				maze.prop.cells[x - 1][y] = 1;
+			if (maze.properties.cells[x - 2][y] != 1) {
+				maze.properties.cells[x - 2][y] = 1;
+				maze.properties.cells[x - 1][y] = 1;
 
 				maze._pushData(
 					{id: maze.tree.length,
@@ -186,7 +208,7 @@ function recursiveDepthFirst(x, y, parentData, depth) {
 				);
 
 				if (x - 2 == 1 && y == 1) {
-					maze.prop.start = maze.tree.length - 1;
+					maze.properties.start = maze.tree.length - 1;
 				}
 
 				recursiveDepthFirst(x - 2, y, maze.tree[maze.tree.length - 1], depth+1);
@@ -202,22 +224,19 @@ function recursiveDepthFirst(x, y, parentData, depth) {
 */
 function displayMaze() {
 	// Create the maze entrance and exit
-	maze.prop.cells[1][0] = 1;
-	maze.prop.cells[maze.prop.size - 2][maze.prop.size - 1] = 1;
-
-	// DEBUG
-	// console.log(maze);
+	maze.properties.cells[1][0] = 1;
+	maze.properties.cells[maze.properties.size - 2][maze.properties.size - 1] = 1;
 
 	// color the walls light grey
-	ctx.fillStyle = "#d4d4d4";
+	mazeCtx.fillStyle = "#d4d4d4";
 
-	var cellWidth = canvas.width / maze.prop.size;
-	var cellHeight = canvas.height / maze.prop.size;
+	let cellWidth = mazeCanvas.width / maze.properties.size;
+	let cellHeight = mazeCanvas.height / maze.properties.size;
 
-	for (var i = 0; i < maze.prop.size; i++) {
-		for (var j = 0; j < maze.prop.size; j++) {
-			if(maze.prop.cells[i][j] == 0) {
-				ctx.fillRect(j * cellWidth, i * cellHeight, cellWidth, cellHeight);
+	for (let i = 0; i < maze.properties.size; i++) {
+		for (let j = 0; j < maze.properties.size; j++) {
+			if(maze.properties.cells[i][j] == 0) {
+				mazeCtx.fillRect(j * cellWidth, i * cellHeight, cellWidth, cellHeight);
 			}
 		}
 	}
@@ -233,69 +252,52 @@ function playMaze() {
 }
 
 function handleKeyPress(e) {
-	if (['w', 'a', 's', 'd'].includes(e.key)) {
-		movePlayer(e.key);
-	}
-}
-
-function movePlayer(dir) {
-	if (dir == "w") {
+	switch (e.key) {
+		case 'w':
 		if (player.row != 1) {
-			if (maze.prop.cells[player.row - 1][player.col] != 0) {
+			if (maze.properties.cells[player.row - 1][player.col] != 0) {
 				player.row -= 1;
 			}
-		}
-		showPos();
-	}
-	if (dir == "a") {
+		} break;
+
+		case 'a':
 		if (player.col != 1) {
-			if (maze.prop.cells[player.row][player.col - 1] != 0) {
+			if (maze.properties.cells[player.row][player.col - 1] != 0) {
 				player.col -= 1;
 			}
-		}
-		showPos();
-	}
-	if (dir == "s") {
-		if (player.row != maze.prop.size - 2) {
-			if (maze.prop.cells[player.row + 1][player.col] != 0) {
+		} break;
+		
+		case 's':
+		if (player.row != maze.properties.size - 2) {
+			if (maze.properties.cells[player.row + 1][player.col] != 0) {
 				player.row += 1;
 			}
-		}
-		showPos();
-	}
-	if (dir == "d") {
-		if (player.col != maze.prop.size - 2) {
-			if (maze.prop.cells[player.row][player.col + 1] != 0) {
+		} break;
+		
+		case 'd':
+		if (player.col != maze.properties.size - 2) {
+			if (maze.properties.cells[player.row][player.col + 1] != 0) {
 				player.col += 1;
 			}
-		}
-		showPos();
+		} break;
 	}
+	showPos();
 }
 
 function showPos() {
-	var cellWidth = canvas.width / maze.prop.size;
-	var cellHeight = canvas.height / maze.prop.size;
+	let cellWidth = mazeCanvas.width / maze.properties.size;
+	let cellHeight = mazeCanvas.height / maze.properties.size;
 
-	ctx.fillStyle = "#42d1d6";
+	mazeCtx.fillStyle = "#42d1d6";
 
-	ctx.fillRect(player.col * cellWidth, player.row * cellHeight, cellWidth, cellHeight);
+	mazeCtx.fillRect(player.col * cellWidth, player.row * cellHeight, cellWidth, cellHeight);
 }
 
 function solveMazeDijkstra() {
 
 	// DEBUG
-	// console.log(maze.prop.start + ", " + maze.prop.end);
+	// console.log(maze.properties.start + ", " + maze.properties.end);
 	// console.log(maze.tree);
-
-	const idMapping = maze.tree.reduce((acc, element, i) => {
-		acc[element.id] = i;
-		return acc;
-	}, {});
-
-	// DEBUG
-	// console.log(maze.tree);
-	// console.log(idMapping);
 
 	let root;
 	maze.tree.forEach(element => {
@@ -303,16 +305,16 @@ function solveMazeDijkstra() {
 			root = element;
 			return;
 		}
-		const parentElement = maze.tree[idMapping[element.parentId]];
+		const parentElement = maze.tree[element.parentId];
 		parentElement.children = [...(parentElement.children || []), element];
 	});
 
 	// DEBUG
 	// console.log(root);
 
-	var startNode = searchTree(root, maze.prop.start);
-	var endNode = searchTree(root, maze.prop.end);
-	var path = getPath(root, startNode, endNode);
+	let startNode = searchTree(root, maze.properties.start);
+	let endNode = searchTree(root, maze.properties.end);
+	let path = getPath(root, startNode, endNode);
 
 	// DEBUG
 	// console.log(path);
@@ -323,14 +325,14 @@ function solveMazeDijkstra() {
 function getPath(root, n1, n2) {
 
 	// get each endpoints path from the root
-	var pathNode1 = getPathFromRoot(root, n1);
-	var pathNode2 = getPathFromRoot(root, n2);
+	let pathNode1 = getPathFromRoot(root, n1);
+	let pathNode2 = getPathFromRoot(root, n2);
 
 	// initialize intersection to not found
-	var intersection = -1;
+	let intersection = -1;
 	
 	// find the intersection
-	var i = 0; j = 0;
+	let i = 0; j = 0;
 	while (i != pathNode1.length || j != pathNode2.length) {
 		if (i == j && pathNode1[i] == pathNode2[i]) {
 			i++;
@@ -341,7 +343,7 @@ function getPath(root, n1, n2) {
 		}
 	}
 
-	var path = [];
+	let path = [];
 	for (i = pathNode1.length - 1; i > intersection; i--) {
 		path.push(pathNode1[i]);
 	}
@@ -352,9 +354,9 @@ function getPath(root, n1, n2) {
 }
 
 function getPathFromRoot(root, node) {
-	var path = [];
+	let path = [];
 
-	var cur = root;
+	let cur = root;
 	while (cur.id != node.id) {
 		path.push(cur);
 
@@ -377,31 +379,37 @@ function getPathFromRoot(root, node) {
 }
 
 function displaySolved(path) {
-	var cellsize = canvas.width / maze.prop.size;
-	for (var i = 0; i < path.length - 1; i++) {
+	let cellsize = mazeCanvas.width / maze.properties.size;
+	for (let i = 0; i < path.length - 1; i++) {
 		drawLine(path[i], path[i + 1], cellsize);
 	}
 }
 
 function drawLine(p1, p2, mag) {
-	ctx.beginPath();
-	ctx.moveTo(p1.xPos * mag + mag/2, p1.yPos * mag + mag/2);
-	ctx.lineTo(p2.xPos * mag + mag/2, p2.yPos * mag + mag/2);
-	ctx.strokeStyle = "#42d1d6";
-	ctx.lineWidth = 2;
-	ctx.stroke();
-	ctx.closePath();
+	mazeCtx.beginPath();
+	mazeCtx.moveTo(p1.xPos * mag + mag/2, p1.yPos * mag + mag/2);
+	mazeCtx.lineTo(p2.xPos * mag + mag/2, p2.yPos * mag + mag/2);
+	mazeCtx.strokeStyle = "#42d1d6";
+	mazeCtx.lineWidth = 2;
+	mazeCtx.stroke();
+	mazeCtx.closePath();
 }
 
 function searchTree(element, ID){
      if(element.id == ID){
           return element;
      }else if (element.children != null){
-          var result = null;
-          for(var i = 0; result == null && i < element.children.length; i++){
+          let result = null;
+          for(let i = 0; result == null && i < element.children.length; i++){
                result = searchTree(element.children[i], ID);
           }
           return result;
      }
      return null;
 }
+
+
+
+/* Create the maze Object */
+let maze = new Maze();
+generateMaze();

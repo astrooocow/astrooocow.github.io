@@ -1,5 +1,5 @@
 button {
-	font-family: Comic Sans MS;
+	font-family: Verdana;
 }
 
 canvas {
@@ -10,10 +10,67 @@ html {
  	scroll-behavior: smooth;
 }
 
-#maze {
-  padding-top: 24px; 
-  width: 100%;
-  text-align: center;
+header {
+  font-family: Verdana;
+  background-color: #004d66;
+  color: #c0c0c0;
+  font-size: 32px;
+  height: 90px;
+  padding-top: 45px;
+  position: relative;
+}
+
+pre {
+  background: #f4f4f4;
+  border: 1px solid #ddd;
+  border-left: 3px solid #007399;
+  color: #666;
+  page-break-inside: avoid;
+  font-family: monospace;
+  font-size: 18px;
+  line-height: 1.6;
+  margin-bottom: 1.6em;
+  max-width: 100%;
+  overflow: auto;
+  text-align: left;
+  tab-size: 2;
+  height: 720px;
+}
+
+.flex-parent {
+  display: flex;
+}
+
+.left{
+  float:left; 
+  width:50%;
+  margin-top: 0;
+  padding: 0;
+  vertical-align: top;
+}
+
+
+.right{
+  float:left; 
+  width:50%;
+  margin-top: 0;
+  padding: 0;
+  vertical-align: top;
+  position: relative;
+}
+
+.clearfix{
+  clear:both
+}
+
+.project{
+    padding-left: 320px;
+}
+
+.project::after{
+  content: "";
+  clear: both;
+  display: table;
 }
 
 .content {
@@ -21,11 +78,10 @@ html {
 }
 
 .sidebar {
-  font-family: Comic Sans MS;
+  font-family: Verdana;
   height: 100%;
   width: 320px;
   position: fixed;
-  z-index: 1;
   top: 0;
   left: 0;
   background-color: #007399;
