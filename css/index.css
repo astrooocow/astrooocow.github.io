@@ -1,3 +1,12 @@
+/* latin */
+@font-face {
+  font-family: 'Nunito Sans';
+  font-style: normal;
+  font-weight: 200;
+  src: url(https://fonts.gstatic.com/s/nunitosans/v8/pe03MImSLYBIv1o4X1M8cc9yAs5tU1E.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 button {
 	font-family: Verdana;
 }
@@ -23,18 +32,188 @@ header {
 pre {
   background: #f4f4f4;
   border: 1px solid #ddd;
-  border-left: 3px solid #007399;
+  border-left: 5px solid #007399;
   color: #666;
   page-break-inside: avoid;
   font-family: monospace;
   font-size: 18px;
   line-height: 1.6;
-  margin-bottom: 1.6em;
   max-width: 100%;
   overflow: auto;
   text-align: left;
   tab-size: 2;
   height: 720px;
+}
+
+a {
+  text-decoration: none;
+  color: rgba(0,0,0,0.87);
+}
+
+.indexAboutMe {
+  position: absolute;
+  background-color: white;
+  border: 1px solid lightgrey;
+  border-radius: 5px;
+  width: 700px;
+  height: 240px;
+  top: 50%;
+  left: 50%;
+  margin-top: -150px;
+  margin-left: -350px;
+  filter: drop-shadow(0 0 15px #e6e6e6);
+}
+
+
+#aboutmeBackground1 {
+  transform: rotate(1.5deg);
+}
+
+#aboutmeBackground2 {
+  transform: rotate(-1.5deg);
+}
+
+#indexBody {
+  background:
+    radial-gradient(rgba(50%, 50%, 50%, 100%) 3px, transparent 4px),
+    radial-gradient(rgba(50%, 50%, 50%, 100%) 3px, transparent 4px),
+    linear-gradient(#fff 4px, transparent 0),
+    linear-gradient(45deg, transparent 74px, transparent 75px, #a4a4a4 75px, #a4a4a4 76px, transparent 77px, transparent 109px),
+    linear-gradient(-45deg, transparent 75px, transparent 76px, #a4a4a4 76px, #a4a4a4 77px, transparent 78px, transparent 109px),
+    #fff;
+    background-size: 109px 109px, 109px 109px,100% 6px, 109px 109px, 109px 109px;
+    background-position: 54px 55px, 0px 0px, 0px 0px, 0px 0px, 0px 0px;
+}
+
+#aboutme {
+  position: absolute;
+  font-family: "Nunito Sans", sans-serif !important;
+}
+
+#name {
+  font-size: 30px;
+  margin: 0;
+  padding-top: 15px;
+  padding-left: 20px;
+  padding-bottom: 5px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, .87);
+}
+
+#name a {
+  float: right;
+  padding-left: 0;
+  padding-top: 15px;
+  padding-right: 20px;
+  font-size: 16px;
+  color: rgba(0, 0, 0, 1);
+  text-decoration: underline;
+}
+
+#aboutBody1{
+  font-size: 16px;
+  margin: 0;
+  padding-left: 20px;
+  padding-right: 20px;
+  color: rgba(0, 0, 0, .50);
+}
+
+#aboutBody2{
+  font-size: 16px;
+  margin: 0;
+  padding-top: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  color: rgba(0, 0, 0, .50);
+}
+
+#divider {
+  margin: 0;
+  margin-left: 2.5%;
+  margin-top: 10px;
+  padding: 0;
+  width: 95%;
+  height: 1px;
+  background-color: rgba(0, 0, 0, .40);
+}
+
+#verticalDivider {
+  margin: 0;
+  padding: 0;
+  width: 1px;
+  height: 100%;
+  background-color: rgba(0,0,0,.4);
+}
+
+#indexLinksDiv {
+  margin: 0;
+  position: absolute;
+  padding: 0;
+  width: 50%;
+  height: 20px;
+  margin-left: 25%;
+  margin-top: 10px;
+  display: flex;
+}
+
+#indexLinksDiv p {
+  display: inline-block;
+  flex-grow: 1;
+  font-size: 16px;
+  margin: 0 0.5em;
+  text-align:center;
+  font-weight: bold;
+}
+
+#portfoliolink {
+  font-size: 18px;
+}
+
+
+
+@media (hover: none) and (pointer: coarse) {
+  .indexAboutMe {
+      width: 95vw;
+      height: 50vh;
+      margin-left: 0%;
+      margin-top: 0%;
+      top: 22.5vh;
+      left: 2.5vw;
+    }
+    #name {
+      font-size: 75px;
+    }
+    #name a {
+      float: right;
+      padding-top: 35px;
+      font-size: 40px;
+      color: rgba(0, 0, 0, 1);
+      text-decoration: underline;
+    }
+    #aboutBody1 {
+      font-size: 40px;
+    }
+    #aboutBody2 {
+      font-size: 40px;
+    }
+    #divider {
+      height: 3px;
+      margin-top: 40px;
+    }
+    #verticalDivider {
+      width: 3px;
+    }
+    #indexLinksDiv p {
+      font-size: 40px;
+    }
+    #portfoliolink {
+      font-size: 50px;
+    }
+    #indexLinksDiv {
+      height: 50px;
+      margin-left: 20%;
+      margin-top: 50px;
+    }
 }
 
 .flex-parent {

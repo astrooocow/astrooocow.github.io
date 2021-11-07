@@ -3,34 +3,6 @@ let quadCtx = quadCanvas.getContext("2d");
 quadCtx.fillStyle = "#d4d4d4";
 
 
-class Point {
-	constructor(x, y) {
-		this.x = x;
-		this.y = y;
-	}
-}
-
-
-class Rectangle {
-	constructor(x, y, width, height) {
-		this.x = x;
-		this.y = y;
-		this.width  = width;
-		this.height = height;
-
-		this.centerx = x + (width  / 2);
-		this.centery = y + (height / 2);
-	}
-
-	contains(point) {
-		if (point.x >= this.x && point.x <= this.x + this.width) {
-			if (point.y >= this.y && point.y <= this.y + this.height)
-				return true;
-		}
-
-		return false;
-	}
-}
 
 
 /* Sorts given points in space into manageable rectangles
@@ -64,7 +36,7 @@ class QuadTree {
 			return false;
 		}
 
-		if (this._query(point)) {
+		if (this._contains(point)) {
 			return false;
 		}
 
@@ -98,8 +70,7 @@ class QuadTree {
 	}
 
 
-	// subdivides this quadTree and draws bounding rect
-	// to canvas
+	// subdivides self into 4 equal subtrees
 	_subdivide() {
 		let NWbounds = new Rectangle(
 			this.bounds.x,
@@ -127,20 +98,15 @@ class QuadTree {
 		this.southEast = new QuadTree(SEbounds);
 		this.southWest = new QuadTree(SWbounds);
 
-		drawRect(NWbounds);
-		drawRect(NEbounds);
-		drawRect(SEbounds);
-		drawRect(SWbounds);
-
 		this.divided = true;
 	}
 
-	_query(point) {
+	_contains(point) {
 		if (this.divided) {
-			if (this.northEast._query(point)) return true;
-			if (this.northWest._query(point)) return true;
-			if (this.southEast._query(point)) return true;
-			if (this.southWest._query(point)) return true;
+			if (this.northEast._contains(point)) return true;
+			if (this.northWest._contains(point)) return true;
+			if (this.southEast._contains(point)) return true;
+			if (this.southWest._contains(point)) return true;
 			return false;
 
 		} else {
@@ -152,7 +118,35 @@ class QuadTree {
 			return false;
 		}
 	}
+
+	_queryRect(boundary, pointsArr) {
+		if (!this.bounds.intersects(boundary))
+			return false;
+
+		if (this.divided) {
+			this.northWest._queryRect(boundary, pointsArr);
+			this.northEast._queryRect(boundary, pointsArr);
+			this.southWest._queryRect(boundary, pointsArr);
+			this.southEast._queryRect(boundary, pointsArr);
+		}
+
+		else {
+			for (let i = 0; i < this.points.length; i++) {
+				if (boundary.contains(this.points[i]))
+					drawPoint(this.points[i], 8, "#d6428a");
+				else
+					drawPoint(this.points[i], 6, "#d6b442");
+			}
+		}
+	}
 }
+
+
+let bounds = new Rectangle(0, 0, quadCanvas.width, quadCanvas.height);
+let quadTree = new QuadTree(bounds);
+let queryRect = new Rectangle(
+	randn_bm() * 769, randn_bm() * 769, 150, 100
+);
 
 
 function getMousePosition(canvas, event) {
@@ -161,17 +155,17 @@ function getMousePosition(canvas, event) {
   let y = Math.floor(event.clientY - bounds.top);
 
   if (x >= 0 && y >= 0)
-	  return new Point(x, y);
+	  return [x, y];
 }
 
 
-function drawPoint(point, s) {
-	quadCtx.fillStyle = "#42d1d6";
+function drawPoint(point, s, c) {
+	quadCtx.fillStyle = c;
 	quadCtx.fillRect(point.x - s/2, point.y - s/2, s, s);
 }
 
 
-function drawRect(r) {
+function drawRect(r, color) {
 	quadCtx.beginPath();
 
 	quadCtx.moveTo(Math.round(r.x), Math.round(r.y));
@@ -186,7 +180,7 @@ function drawRect(r) {
 	quadCtx.moveTo(Math.round(r.x + r.width), Math.round(r.y));
 	quadCtx.lineTo(Math.round(r.x), Math.round(r.y));
 
-	quadCtx.strokeStyle = "#d4d4d4";
+	quadCtx.strokeStyle = color;
 	quadCtx.linewidth = 2;
 	quadCtx.stroke();
 	quadCtx.closePath();
@@ -195,7 +189,7 @@ function drawRect(r) {
 
 
 function displayQuadTreeBounds(quadTree) {
-	drawRect(quadTree.bounds);
+	drawRect(quadTree.bounds, "#b3b3b3");
 	if (quadTree.divided) {
 		displayQuadTreeBounds(quadTree.northEast);
 		displayQuadTreeBounds(quadTree.northWest);
@@ -214,42 +208,60 @@ function displayQuadTreePoints(quadTree) {
 
 	} else {
 		for (let i = 0; i < quadTree.points.length; i++) {
-			drawPoint(quadTree.points[i], 4);
+			drawPoint(quadTree.points[i], 4, "#42d1d6");
 		}
 	}
 }
 
 
-function start() {
-	let bounds = new Rectangle(0, 0, quadCanvas.width, quadCanvas.height);
-	let quadTree = new QuadTree(bounds);
+function isIntersecting(r1, r2) {
+	return !(r2.x > r1.x + r1.width || 
+           r2.x + r2.width < r1.x || 
+           r2.y > r1.y + r1.height ||
+           r2.y + r2.height < r1.y);
+}
 
-	let splashMessageDisplayed = drawCanvasSplash();
+
+function randn_bm() {
+  let u = 0, v = 0;
+  while(u === 0) u = Math.random();
+  while(v === 0) v = Math.random();
+  let num = Math.sqrt( -5.0 * Math.log( u ) );
+  num *= Math.cos( 2.0 * Math.PI * v );
+  num = num / 10.0 + 0.5; 
+  if (num > 1 || num < 0) return randn_bm() 
+  return num
+}
+
+
+function generateQuadTree() {
+	quadTree = new QuadTree(bounds);
 	drawCanvasBounds();
-	
-	quadCanvas.addEventListener("click", function(e) {
-		let point = getMousePosition(quadCanvas, e);
 
-		if (point) {
+	for (let i = 0; i < 500; i++)
+	{
+    let x = Math.floor(randn_bm() * 769);
+    let y = Math.floor(randn_bm() * 769);
+    quadTree.insert(new Point(x, y));
+	}
 
-			if (splashMessageDisplayed) {
-				quadCtx.clearRect(0, 0, quadCanvas.width, quadCanvas.height);
-				drawCanvasBounds();
-				splashMessageDisplayed = false;
-			}
+	displayQuadTreeBounds(quadTree);
+	displayQuadTreePoints(quadTree);
 
-			if (quadTree.insert(point)) {
-				quadCtx.clearRect(0, 0, quadCanvas.width, quadCanvas.height);
-				drawCanvasBounds();
-				displayQuadTreeBounds(quadTree);
-				displayQuadTreePoints(quadTree);
-			}
-		}
-	});
+	queryRect = new Rectangle(
+		randn_bm() * 769, randn_bm() * 769, 150, 100
+	);
+
+	drawRect(queryRect, "#004d66");
+	quadTree._queryRect(queryRect, []);
+
+	drawCanvasSplash();
 }
 
 
 function drawCanvasBounds() {
+	quadCtx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
+
 	quadCtx.beginPath();
 
 	quadCtx.moveTo(1, 1);
@@ -272,15 +284,44 @@ function drawCanvasBounds() {
 
 
 function drawCanvasSplash() {
-	quadCtx.font = '48px Verdana';
+	quadCtx.fillStyle = '#b3b3b3';
+	quadCtx.font = '32px Verdana';
 	quadCtx.textBaseline = 'middle';
 	quadCtx.textAlign = 'center';
-	quadCtx.fillText("Click anywhere!",
+	quadCtx.fillText("Click and drag",
 		quadCanvas.width  / 2,
-		quadCanvas.height / 2);
+		25);
 
 	return true;
 }
 
 
-start();
+generateQuadTree();
+
+let mouseDown = false;
+quadCanvas.addEventListener("mousedown", e => {
+	mouseDown = true;
+});
+
+quadCanvas.addEventListener("mouseup", e => {
+	mouseDown = false;
+});
+
+drawRect(queryRect, "#004d66");
+quadTree._queryRect(queryRect, []);
+
+quadCanvas.addEventListener("mousemove", e => {
+	if (mouseDown) {
+		quadCtx.clearRect(0, 0, quadCanvas.width, quadCanvas.height);
+		drawCanvasBounds();
+		displayQuadTreeBounds(quadTree);
+		displayQuadTreePoints(quadTree);
+		let xy = getMousePosition(quadCanvas, e);
+		queryRect.x = xy[0] - 75;
+		queryRect.y = xy[1] - 50;
+		drawRect(queryRect, "#004d66");
+		quadTree._queryRect(queryRect, []);
+
+		drawCanvasSplash();
+	}
+});

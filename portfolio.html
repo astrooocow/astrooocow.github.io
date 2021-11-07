@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"/>
+		<link rel="stylesheet" type="text/css" href="css/index.css">
+		<link rel="stylesheet" type="text/css" href="css/prism.css" />
+		<script type="text/javascript" src="js/index.js"></script>
+		<script type="text/javascript" src="js/prism.js"></script>
+	</head>
+
+	<body class="content">
+		<div id="maze" class="project">
+			<header>Maze Generator</header>
+			<br>
+			<div class="parent flex-parent">
+				<div class="left">
+					<canvas 
+						id="mazeCanvas"
+						width="769"
+						height="769">
+					</canvas>
+					<br>
+					<br>
+					<button 
+						class="mazeButton"
+						id="mazeGenButton"
+						onclick="generateMaze();">
+						Generate
+					</button>
+
+					<button
+						class="mazeButton"
+						id="solveMazeButton">
+						Solve
+					</button>
+				</div>
+				<div class="right">
+					<pre><code class=" language-js">/*------------------------------------------------------------*/
+function generateMaze() {
+	let width  = Math.floor(mazeCanvas.width  / cellSize);
+	let height = Math.floor(mazeCanvas.height / cellSize);
+
+	// create 2D array to hold all nodes.
+	let arr = new Array(height);
+	for (let i = 0; i < height; i++)
+		arr[i] = new Array(width);
+
+	for (let i = 0; i < height; i++) { 
+		for (let j = 0; j < width; j++)
+			arr[i][j] = new Node(j, i, null);
+	}
+
+	// select a random position to start the 
+	// creation of a maze.
+	let startx = getRandomInt(width);
+	let starty = getRandomInt(height);
+	recursive(starty, startx, arr);
+}
+
+
+/*
+* This is a recursive, randomized, depth first
+* maze generating algorithm. This algorithm
+* randomly carves out a maze in a given domain
+* until it loops back onto itself. Then the 
+* algorithm retraces its steps until it can start
+* carving the maze again. The resulting maze is
+* represented as a tree with the node at position
+* (startx, starty) as the root, and the dead ends
+* as leaves.
+*/
+function recursive(row, col, arr) {
+	let dirs = [1, 2, 3, 4];
+	dirs = randomizeArray(dirs);
+	arr[row][col].visited = true;
+
+	for (let i = 0; i < dirs.length; i++)
+	{
+		switch (dirs[i])
+		{
+		case 1:  // up
+			if (row - 1 < 0) 
+				continue;
+
+			if (!arr[row - 1][col].visited)
+			{
+				arr[row - 1][col].visited = true;
+				arr[row - 1][col].parent = arr[row][col];
+				arr[row][col].children.push(arr[row - 1][col]);
+				recursive(row - 1, col, arr);
+			}
+			break;
+
+		case 2:  // right
+			if (col + 1 > mazeCanvas.width / cellSize - 1) 
+				continue;
+
+			if (!arr[row][col + 1].visited)
+			{
+				arr[row][col + 1].visited = true;
+				arr[row][col + 1].parent = arr[row][col];
+				arr[row][col].children.push(arr[row][col + 1]);
+				recursive(row, col + 1, arr);
+			}
+			break;
+
+		case 3:  // down
+			if (row + 1 > mazeCanvas.height / cellSize - 1) 
+				continue;
+
+			if (!arr[row + 1][col].visited)
+			{
+				arr[row + 1][col].visited = true;
+				arr[row + 1][col].parent = arr[row][col];
+				arr[row][col].children.push(arr[row + 1][col]);
+				recursive(row + 1, col, arr);
+			}
+			break;
+
+		case 4:  // left
+			if (col - 1 < 0) 
+				continue;
+
+			if (!arr[row][col - 1].visited)
+			{
+				arr[row][col - 1].visited = true;
+				arr[row][col - 1].parent = arr[row][col];
+				arr[row][col].children.push(arr[row][col - 1]);
+				recursive(row, col - 1, arr);
+			}
+			break;
+		}
+	}
+}
+
+/*
+* This solution abuses the fact that this
+* maze can be represented as a tree, and
+* we know where the root node, the entrance
+* node, and the exit node are. The solution
+* can be represented as the path from the
+* entrance to the root and from the root
+* to the exit. However if there is an
+* intersection of the two paths. It would be
+* simpler to display the solution as the
+* path from the entrance to the intersection
+* to the exit. 
+*/
+function getSolution(arr, startx, starty, width, height)
+{
+	// get path from the root of the tree
+	// to the entrance of the maze.
+	let path1 = [];
+	getPath(arr[starty][startx], arr[0][0], path1);
+
+	// get path from the root of the tree
+	// to the exit of the maze.
+	let path2 = [];
+	getPath(arr[starty][startx], arr[width - 1][height - 1], path2);
+
+
+	// step through both paths until an
+	// intersection is found.
+	let intersection = -1;
+  let i = 0, j = 0;
+  while (i != path1.length || j != path2.length) {
+
+    if (i == j && path1[i] == path2[i]) {
+      i++;
+      j++;
+    }
+    else {
+      intersection = j - 1;
+      break;
+    }
+  }
+
+  // with the intersection now known
+  // combine both paths.
+  let path = [];
+  for (let i = path1.length - 1; i > intersection; i--)
+    path.push(path1[i]);
+ 
+  for (let i = intersection; i < path2.length; i++)
+    path.push(path2[i]);
+}
+
+
+/*
+* Recursive funtion to find a path between any node
+* and any node beneath it. 
+*/
+function getPath(root, end, path)
+{
+	// base case
+	if (root == null)
+		return false;
+
+	// add this node to the path
+	path.push(root);
+
+	if (root == end)
+		return true;
+
+	// determine if a path can be found
+	// from any of the root nodes children
+	// and the end node.
+	for (let i = 0; i < root.children.length; i++)
+	{
+		if (getPath(root.children[i], end, path))
+			return true;
+	}
+
+	// if the end node cannot be found beneath
+	// this node pop the bad path.
+	path.pop();
+	return false;
+}</code></pre>
+				</div>
+			</div>
+			<script 
+				type="text/javascript"
+				src="js/Maze.js">
+			</script>
+		</div>
+		<br>
+
+		<div id="quad" class="project">
+			<header>Quad Tree Visualizer</header>
+			<br>
+			<div class="parent flex-parent">
+				<div class="left">
+					<canvas 
+						id="quadCanvas"
+						width="769"
+						height="769">
+					</canvas>
+					<br>
+					<br>
+					<button 
+						class="mazeButton"
+						id="mazeGenButton"
+						onclick="generateQuadTree();">
+						Generate
+					</button>
+				</div>
+
+				<div class="right">
+					<pre><code class=" language-js">/*------------------------------------------------------------*/
+/* A quad tree efficiently stores points in 2 dimensional space.
+*  Each leaf node in the tree can store a maximum of 1 data point.
+
+*  @param capacity: max number of points per leaf
+*  @param bounds  : bounding rectangle
+*  @param points[]: point values
+*  @param divided : boolean determining if this quadTree
+*                   has divided yet.
+*/
+class QuadTree
+{
+	constructor(bounds)
+	{
+		this.capacity = 1;
+		this.bounds = bounds;
+		this.points = [];
+		this.divided = false;
+
+		this.northWest = undefined;
+		this.northEast = undefined;
+		this.southEast = undefined;
+		this.southWest = undefined;
+	}
+
+
+	/*
+	*	Quad Tree insertion algorithm:
+	*	Insert a data point into the root node of the quad
+	*	tree. Then check if the tree already contains the point.
+	*	If the node is a leaf and has space, add the data
+	*	point. If the node is not a leaf node then attempt
+	*	to insert the data point into each of its children
+	*	If the leaf node does not have space, then subdivide
+	*	the node and attempt to insert the point into each 
+	*	of its children. To maintain the rule that only leaf
+	*	nodes can have data points, when a leaf is
+	*	subdivided, re-insert its data point(s) into its new
+	*	children.
+	*/
+	insert(point) {
+		if (!this.bounds.contains(point)) {
+			return false;
+		}
+
+		if (this._contains(point)) {
+			return false;
+		}
+
+		// insert if node has space and has no child nodes
+		if (this.points.length < this.capacity && !this.divided)
+		{
+			this.points.push(point);
+			return true;
+		}
+
+		else if (!this.divided)
+		{
+			this._subdivide();
+
+			// insert old point(s) into children
+			for (let i = 0; i < this.points.length; i++)
+			{
+				if (this.northWest.insert(this.points[i])) 
+					{ this.points = []; continue; }
+				if (this.northEast.insert(this.points[i]))
+					{ this.points = []; continue; }
+				if (this.southEast.insert(this.points[i]))
+					{ this.points = []; continue; }
+				if (this.southWest.insert(this.points[i]))
+					{ this.points = []; continue; }
+			}
+		}
+
+		// pass the point to child nodes
+		if (this.northWest.insert(point)) return true;
+		if (this.northEast.insert(point)) return true;
+		if (this.southEast.insert(point)) return true;
+		if (this.southWest.insert(point)) return true;
+	}
+
+
+	// subdivides self into 4 equal subtrees
+	_subdivide()
+	{
+		let NWbounds = new Rectangle(
+			this.bounds.x,
+			this.bounds.y,
+			this.bounds.width  / 2,
+			this.bounds.height / 2 );
+		let NEbounds = new Rectangle(
+			this.bounds.centerx,
+			this.bounds.y,
+			this.bounds.width  / 2,
+			this.bounds.height / 2 );
+		let SEbounds = new Rectangle(
+			this.bounds.centerx,
+			this.bounds.centery,
+			this.bounds.width  / 2,
+			this.bounds.height / 2 );
+		let SWbounds = new Rectangle(
+			this.bounds.x,
+			this.bounds.centery,
+			this.bounds.width  / 2,
+			this.bounds.height / 2 );
+
+		this.northWest = new QuadTree(NWbounds);
+		this.northEast = new QuadTree(NEbounds);
+		this.southEast = new QuadTree(SEbounds);
+		this.southWest = new QuadTree(SWbounds);
+
+		this.divided = true;
+	}
+
+	_contains(point)
+	{
+		if (this.divided)
+		{
+			if (this.northEast._contains(point)) return true;
+			if (this.northWest._contains(point)) return true;
+			if (this.southEast._contains(point)) return true;
+			if (this.southWest._contains(point)) return true;
+			return false;
+		}
+
+		else
+		{
+			for (let i = 0; i < this.points.length; i++)
+			{
+				if (this.points[i].x == point.x &&
+						this.points[i].y == point.y)
+					return true;
+			}
+			return false;
+		}
+	}
+
+	_queryRect(boundary, pointsArr) {
+		if (!this.bounds.intersects(boundary))
+			return false;
+
+		if (this.divided) {
+			this.northWest._queryRect(boundary, pointsArr);
+			this.northEast._queryRect(boundary, pointsArr);
+			this.southWest._queryRect(boundary, pointsArr);
+			this.southEast._queryRect(boundary, pointsArr);
+		}
+
+		else {
+			for (let i = 0; i < this.points.length; i++) {
+				if (boundary.contains(this.points[i]))
+					// draw all points contained within the rect
+					// as larger pink points.
+					drawPoint(this.points[i], 8, "#d6428a");
+				
+				else
+					// draw all queried points as medium sized
+					// orange points.
+					drawPoint(this.points[i], 6, "#d6b442");
+			}
+		}
+	}
+}</code></pre>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+
+			<script 
+				type="text/javascript"
+				src="js/QuadTree.js">
+			</script>
+		<div class="sidebar">
+			<a class="sideButton" href="#maze">Maze</a>
+			<a class="sideButton" href="#quad">Quad Tree Visualizer</a>
+		</div>
+	</body>
+</html>
