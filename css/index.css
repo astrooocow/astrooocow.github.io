@@ -154,6 +154,7 @@ a {
   margin-left: 25%;
   margin-top: 10px;
   display: flex;
+  text-decoration: underline;
 }
 
 #indexLinksDiv p {
